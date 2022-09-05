@@ -67,3 +67,12 @@ class SegmentationDatasetFactory(ABC):
         )
         dataset = dataset.batch(self.batch_size, drop_remainder=True)
         return dataset.prefetch(tf.data.AUTOTUNE)
+
+    def get_datasets(self):
+        train_dataset = self.build_dataset(
+            image_list=self.train_image_files, label_list=self.train_mask_files
+        )
+        val_dataset = self.build_dataset(
+            image_list=self.val_image_files, label_list=self.val_mask_files
+        )
+        return train_dataset, val_dataset
