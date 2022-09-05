@@ -24,6 +24,7 @@ def get_model_configs() -> ml_collections.ConfigDict:
 def get_training_configs() -> ml_collections.ConfigDict:
     config = ml_collections.ConfigDict()
 
+    config.use_mixed_precision = True
     config.loss_alias = "cross_entropy"
     config.one_hot_encoding = False
     config.learning_rate = 1e-3

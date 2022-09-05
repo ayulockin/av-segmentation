@@ -39,10 +39,19 @@ def main(_):
     )
     FLAGS.experiment_configs.data_configs["global_batch_size"] = global_batch_size
 
+    # Set precision.
+    if FLAGS.experiment_configs.training_configs.use_mixed_precision:
+        mixed_precision.set_global_policy("mixed_float16")
+        logging.info("Using mixed-precision.")
+        policy = mixed_precision.global_policy()
+        assert policy.compute_dtype == "float16"
+        assert policy.variable_dtype == "float32"
+
     wandb.init(
         project=FLAGS.wandb_project_name,
         entity=FLAGS.wandb_entity_name,
         job_type=FLAGS.wandb_job_type,
+        config=FLAGS.experiment_configs.to_dict()
     )
 
     data_loader = BDDSemanticSegmentationLoader(
@@ -74,7 +83,7 @@ def main(_):
             )
 
         optimizer = optimizers.Adam(
-            learning_rate=FLAGS.experiment_configs.model_configs.learning_rate
+            learning_rate=FLAGS.experiment_configs.training_configs.learning_rate
         )
 
     model.compile(optimizer=optimizer, loss=loss, metrics=["accuracy"])
@@ -87,7 +96,7 @@ def main(_):
     model.fit(
         train_dataset,
         validation_data=val_dataset,
-        epochs=FLAGS.experiment_configs.model_configs.epochs,
+        epochs=FLAGS.experiment_configs.training_configs.epochs,
         callbacks=callbacks,
     )
 
