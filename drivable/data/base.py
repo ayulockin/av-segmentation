@@ -51,13 +51,13 @@ class SegmentationDatasetFactory(ABC):
     def load_data(self, image, label):
         image = self.read_image(image, is_label=False)
         label = self.read_image(label, is_label=True)
+        label = (
+            tf.one_hot(label, depth=self.num_classes, axis=-1)
+            if self.num_classes is not None
+            else label
+        )
         image = tf.image.resize(images=image, size=[self.image_size, self.image_size])
         label = tf.image.resize(images=label, size=[self.image_size, self.image_size])
-        # label = (
-        #     tf.one_hot(label, depth=self.num_classes, axis=-1)
-        #     if self.num_classes is not None
-        #     else label
-        # )
         return image, label
 
     def build_dataset(self, image_list: List[str], label_list: List[str]):
