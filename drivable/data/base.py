@@ -52,7 +52,11 @@ class SegmentationDatasetFactory(ABC):
         image = self.read_image(image, is_label=False)
         label = self.read_image(label, is_label=True)
         label = (
-            tf.one_hot(label, depth=self.num_classes, axis=-1)
+            tf.one_hot(
+                tf.image.convert_image_dtype(label, dtype=tf.int32),
+                depth=self.num_classes,
+                axis=-1,
+            )
             if self.num_classes is not None
             else label
         )
