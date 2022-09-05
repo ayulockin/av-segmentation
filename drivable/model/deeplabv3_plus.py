@@ -58,7 +58,7 @@ def build_deeplabv3_plus(
     backbone_model = bakbone_type(
         weights="imagenet", include_top=False, input_tensor=model_input
     )
-    x = DilatedSpatialPyramidPooling(
+    x = DilatedSpatialPyramidPooling()(
         backbone_model.get_layer(encoder_backbone_layer).output
     )
 
