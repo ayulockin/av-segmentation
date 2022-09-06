@@ -19,10 +19,10 @@ from drivable.callbacks import WandBMetricsLogger, WandbModelCheckpoint
 
 FLAGS = flags.FLAGS
 flags.DEFINE_string(
-    name="wandb_project_name", default=None, help="Weights & Biases project name"
+    name="wandb_project", default=None, help="Weights & Biases project name"
 )
 flags.DEFINE_string(
-    name="wandb_entity_name", default=None, help="Weights & Biases entity name"
+    name="wandb_entity", default=None, help="Weights & Biases entity name"
 )
 flags.DEFINE_string(
     name="wandb_job_type", default=None, help="Type of Weights & Biases job"
@@ -48,8 +48,8 @@ def main(_):
         assert policy.variable_dtype == "float32"
 
     wandb.init(
-        project=FLAGS.wandb_project_name,
-        entity=FLAGS.wandb_entity_name,
+        project=FLAGS.wandb_project,
+        entity=FLAGS.wandb_entity,
         job_type=FLAGS.wandb_job_type,
         config=FLAGS.experiment_configs.to_dict()
     )
