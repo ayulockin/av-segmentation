@@ -1,4 +1,9 @@
-# Drivable Area Detection
+# Autonomous Vehicle Segmentation Tasks
+
+
+## Semantic Segmentation
+
+## Drivable Area Detection
 
 Drivable segmentation for autonomous driving using Keras and baked with Weights and Biases.
 
