@@ -13,12 +13,14 @@ import tensorflow as tf
 
 from drivable.data import GetDrivableDataloader
 from drivable.model import get_unet_model
+from drivable.utils.devices import initialize_device
+from drivable import callbacks
 
 # Config
 FLAGS = flags.FLAGS
 CONFIG = config_flags.DEFINE_config_file("config")
 flags.DEFINE_bool("wandb", False, "MLOps pipeline for our classifier.")
-# flags.DEFINE_bool("log_model", False, "Checkpoint model while training.")
+flags.DEFINE_bool("log_model", False, "Checkpoint model while training.")
 # flags.DEFINE_bool("log_eval", False, "Log model prediction, needs --wandb argument as well.")
 
 TRAIN_DATA_PATH = f"artifacts/bdd100k-dataset:v0/images/100k/train"
@@ -35,22 +37,21 @@ def main(_):
     print(config)
 
     CALLBACKS = []
-    # # Initialize a Weights and Biases run.
-    # if FLAGS.wandb:
-    #     run = wandb.init(
-    #         project=CONFIG.value.wandb_config.project,
-    #         job_type='train',
-    #         config=config.to_dict(),
-    #     )
-    #     wandb.run._label(code="ccd2022")
-    #     # WandbCallback for experiment tracking
-    #     CALLBACKS += [WandbCallback(save_model=False)]
+    # Initialize a Weights and Biases run.
+    if FLAGS.wandb:
+        run = wandb.init(
+            entity=CONFIG.value.wandb_config.entity,
+            project=CONFIG.value.wandb_config.project,
+            job_type='train',
+            config=config.to_dict(),
+        )
+        # Initialize W&B metrics logger callback.
+        CALLBACKS += [callbacks.WandBMetricsLogger()]
 
     # Download and get dataset
     # dataset_name = config.dataset_config.dataset_name
     # info, (train_images, train_labels) = download_and_get_dataset(dataset_name, 'train')
     # info, (valid_images, valid_labels) = download_and_get_dataset(dataset_name, 'valid')
-
 
     # Get dataloader
     make_dataloader = GetDrivableDataloader(config)
@@ -59,27 +60,27 @@ def main(_):
     imgs, masks = next(iter(trainloader))
     print(imgs.shape, masks.shape)
 
-    # # Get model
+    # Get model
     tf.keras.backend.clear_session()
     model = get_unet_model((224, 224), 3)
     model.summary()
 
-    # # Initialize callbacks
-    # callback_config = config.callback_config
-    # # Builtin early stopping callback
-    # if callback_config.use_earlystopping:
-    #     earlystopper = get_earlystopper(config)
-    #     CALLBACKS += [earlystopper]
-    # # Built in callback to reduce learning rate on plateau
-    # if callback_config.use_reduce_lr_on_plateau:
-    #     reduce_lr_on_plateau = get_reduce_lr_on_plateau(config)
-    #     CALLBACKS += [reduce_lr_on_plateau]
-
-    # # Initialize Custom W&B callbacks
-    # if FLAGS.log_model:
-    #     # Custom W&B model checkpoint callback
-    #     model_checkpointer = get_model_checkpoint_callback(config)
-    #     CALLBACKS += [model_checkpointer]
+    # Initialize callbacks
+    callback_config = config.callback_config
+    # Builtin early stopping callback
+    if callback_config.use_earlystopping:
+        earlystopper = callbacks.get_earlystopper(config)
+        CALLBACKS += [earlystopper]
+    # Built in callback to reduce learning rate on plateau
+    if callback_config.use_reduce_lr_on_plateau:
+        reduce_lr_on_plateau = callbacks.get_reduce_lr_on_plateau(config)
+        CALLBACKS += [reduce_lr_on_plateau]
+    
+    # Initialize Model checkpointing callback
+    if FLAGS.log_model:
+        # Custom W&B model checkpoint callback
+        model_checkpointer = callbacks.get_model_checkpoint_callback(config)
+        CALLBACKS += [model_checkpointer]    
 
     # # Custom W&B model prediction visualization callback
     # if wandb.run is not None:
