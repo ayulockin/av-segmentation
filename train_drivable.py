@@ -12,6 +12,7 @@ from wandb.keras import WandbCallback
 import tensorflow as tf
 
 from drivable.data import GetDrivableDataloader
+from drivable.model import get_unet_model
 
 # Config
 FLAGS = flags.FLAGS
@@ -33,7 +34,7 @@ def main(_):
     config = CONFIG.value
     print(config)
 
-    # CALLBACKS = []
+    CALLBACKS = []
     # # Initialize a Weights and Biases run.
     # if FLAGS.wandb:
     #     run = wandb.init(
@@ -55,11 +56,13 @@ def main(_):
     make_dataloader = GetDrivableDataloader(config)
     trainloader = make_dataloader.get_dataloader(img_paths, mask_paths)
     # validloader = make_dataloader.get_dataloader(valid_images, valid_labels, dataloader_type="valid")
+    imgs, masks = next(iter(trainloader))
+    print(imgs.shape, masks.shape)
 
     # # Get model
-    # tf.keras.backend.clear_session()
-    # model = get_model(config)
-    # model.summary()
+    tf.keras.backend.clear_session()
+    model = get_unet_model((224, 224), 3)
+    model.summary()
 
     # # Initialize callbacks
     # callback_config = config.callback_config
@@ -84,20 +87,20 @@ def main(_):
     #         model_pred_viz = get_evaluation_callback(config, validloader)
     #         CALLBACKS += [model_pred_viz]
 
-    # # Compile the model
-    # model.compile(
-    #     optimizer = config.train_config.optimizer,
-    #     loss = config.train_config.loss,
-    #     metrics = config.train_config.metrics
-    # )
+    # Compile the model
+    model.compile(
+        optimizer = config.train_config.optimizer,
+        loss = config.train_config.loss,
+        metrics = config.train_config.metrics
+    )
 
-    # # Train the model
-    # model.fit(
-    #     trainloader,
-    #     validation_data = validloader,
-    #     epochs = config.train_config.epochs,
-    #     callbacks=CALLBACKS
-    # )
+    # Train the model
+    model.fit(
+        trainloader,
+        # validation_data = validloader,
+        epochs = config.train_config.epochs,
+        callbacks=CALLBACKS
+    )
 
 
 if __name__ == "__main__":

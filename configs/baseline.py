@@ -57,7 +57,7 @@ def get_train_configs() -> ml_collections.ConfigDict:
     configs.use_augmentations = False
     configs.optimizer = "adam"
     configs.sgd_momentum = 0.9
-    configs.loss = "categorical_crossentropy"
+    configs.loss = "sparse_categorical_crossentropy"
     configs.metrics = ["accuracy"]
 
     return configs

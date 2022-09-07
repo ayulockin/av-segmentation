@@ -50,6 +50,15 @@ class GetDrivableDataloader():
             img, channels=self.args.dataset_config.channels)
         # Normalize image
         img = tf.image.convert_image_dtype(img, dtype=tf.float32)
+        # Resize image
+        img = tf.image.resize(
+            img, 
+            [self.args.dataset_config.image_height, 
+            self.args.dataset_config.image_width],
+            method='bicubic',
+            preserve_aspect_ratio=False
+        )
+        img = tf.clip_by_value(img, 0.0, 1.0)
 
         return img
 
@@ -59,6 +68,14 @@ class GetDrivableDataloader():
             mask, channels=self.args.dataset_config.mask_channels)
         # Cast mask to int32
         mask = tf.cast(mask, dtype=tf.int32)
+        # Resize mask
+        mask = tf.image.resize(
+            mask,
+            [self.args.dataset_config.image_height, 
+            self.args.dataset_config.image_width],
+            method='nearest',
+            preserve_aspect_ratio=False
+        )
 
         return mask
 
