@@ -38,7 +38,7 @@ class GetDrivableDataloader():
         # Add general stuff
         dataloader = (
             dataloader
-            .batch(self.args.dataset_config.batch_size)
+            .batch(self.args.dataset_config.batch_size, drop_remainder=True)
             .prefetch(AUTOTUNE)
         )
 

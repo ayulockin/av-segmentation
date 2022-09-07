@@ -28,13 +28,20 @@ TRAIN_MASK_PATH = f"artifacts/train_masks:v0"
     
 img_paths = glob.glob(f"{TRAIN_DATA_PATH}/*.jpg")
 mask_paths = glob.glob(f"{TRAIN_MASK_PATH}/*.png")
-print(img_paths[:5], mask_paths[:5])
 
 
 def main(_):
     # Get configs from the config file.
     config = CONFIG.value
     print(config)
+
+    # Detect strategy
+    strategy = initialize_device()
+    batch_size = (
+        config.dataset_config.batch_size
+        * strategy.num_replicas_in_sync
+    )
+    config.dataset_config.batch_size = batch_size
 
     CALLBACKS = []
     # Initialize a Weights and Biases run.
@@ -60,10 +67,18 @@ def main(_):
     imgs, masks = next(iter(trainloader))
     print(imgs.shape, masks.shape)
 
-    # Get model
-    tf.keras.backend.clear_session()
-    model = get_unet_model((224, 224), 3)
-    model.summary()
+    with strategy.scope():
+        # Get model
+        tf.keras.backend.clear_session()
+        model = get_unet_model((224, 224), 3)
+
+        # if config.train_config.loss == "sparse_categorical_crossentropy":
+        #     loss = tf.keras.losses.SparseCategoricalCrossentropy()
+
+        # if config.train_config.optimizer == "adam":
+        #     optimizer = tf.keras.optimizers.Adam(
+                
+        #     )
 
     # Initialize callbacks
     callback_config = config.callback_config

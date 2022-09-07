@@ -56,6 +56,7 @@ def get_train_configs() -> ml_collections.ConfigDict:
     configs.epochs = 3
     configs.use_augmentations = False
     configs.optimizer = "adam"
+    configs.learning_rate = 0.001
     configs.sgd_momentum = 0.9
     configs.loss = "sparse_categorical_crossentropy"
     configs.metrics = ["accuracy"]
