@@ -108,38 +108,3 @@ def main(_):
 
 if __name__ == "__main__":
     app.run(main)
-
-###################
-
-# import wandb
-
-# PROJECT_NAME = "incremental_table_demo"
-# TABLE_NAME = "incremental_table"
-# TABLE_COLUMNS = ["col_1", "col_2"]
-
-# # Create a new run
-# run = wandb.init(project=PROJECT_NAME)
-
-# # Create an artifact to hold the partitioned table
-# # Setting `incremental=True` allows you to append to the last version 
-# # of the artifact without downloading everything locally
-# art = wandb.Artifact(
-#     name=TABLE_NAME,
-#     type="example",
-#     incremental=True
-# )
-
-# # Create a Partitioned Table pointing to a directory in the artifact (only
-# # need to do this once)
-# if i == 0:
-#     parts_dir = f"{TABLE_NAME}_parts"
-#     tab = wandb.data_types.PartitionedTable(parts_dir)
-#     art.add(tab, TABLE_NAME)
-
-# # Create the table, and add it to the artifact
-# sub_tab = wandb.Table(data=[["a", i], ["b", i**2]], columns=TABLE_COLUMNS)
-# tab_path = "{}/tab_{}".format(parts_dir, i)
-# art.add(sub_tab, tab_path)
-
-# # Log the artifact
-# run.log_artifact(art)
