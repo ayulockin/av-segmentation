@@ -8,4 +8,4 @@ run = wandb.init(
 artifact = run.use_artifact(
     "av-team/bdd100k-perception/bdd100k-dataset:v0", type="dataset"
 )
-artifact_dir = artifact.download("../")
+artifact_dir = artifact.download()
