@@ -84,6 +84,8 @@ class WandbModelCheckpoint(callbacks.ModelCheckpoint):
         # User friendly warning when trying to save the best model.
         if self.save_best_only:
             self._check_filepath()
+        
+        self.best_score = float('inf')
 
     def on_train_batch_end(self, batch: int, logs: Dict[str, float] = None):
         if self._should_save_on_batch(batch):
@@ -105,6 +107,10 @@ class WandbModelCheckpoint(callbacks.ModelCheckpoint):
             filepath = self._get_file_path(epoch=epoch, batch=None, logs=logs)
             # Log the model as artifact
             aliases = ["latest", f"epoch_{epoch}"]
+
+            if logs['val_loss'] < self.best_score:
+                self.best_score = logs['val_loss']
+                aliases.append("best")
             self._log_ckpt_as_artifact(filepath, aliases=aliases)
 
     def _log_ckpt_as_artifact(self, filepath: str, aliases: List[str] = []):
