@@ -19,8 +19,14 @@ from drivable import callbacks
 # Config
 FLAGS = flags.FLAGS
 CONFIG = config_flags.DEFINE_config_file("config")
-flags.DEFINE_bool("wandb", False, "MLOps pipeline for our classifier.")
+flags.DEFINE_bool("wandb", True, "MLOps pipeline for our classifier.")
 flags.DEFINE_bool("log_model", False, "Checkpoint model while training.")
+flags.DEFINE_float("lr", 0.001, "Learning Rate for training the model")
+flags.DEFINE_float("dropout", 0.5, "Dropout rate")
+flags.DEFINE_bool("use_augmentations", True, "If images are to be augmented")
+flags.DEFINE_float("momentum", 0.9, "Momentum for optimizer")
+flags.DEFINE_integer("epochs", 50, "Number of epochs")
+flags.DEFINE_bool("scheduler", True, "Whether scheduler is to be used")
 # flags.DEFINE_bool("log_eval", False, "Log model prediction, needs --wandb argument as well.")
 
 TRAIN_DATA_PATH = f"/home/manan_goel/av-segmentation/artifacts/bdd100k-dataset:v0/images/100k/train"
@@ -52,9 +58,14 @@ with open("splits/val_split.txt", "r") as f:
 
 
 def main(_):
-    quit()
     # Get configs from the config file.
     config = CONFIG.value
+    config.train_config.learning_rate = FLAGS.lr
+    config.model_config.dropout_rate = FLAGS.dropout
+    config.train_config.use_augmentations = FLAGS.use_augmentations
+    config.train_config.sgd_momentum = FLAGS.momentum
+    config.train_config.epochs = FLAGS.epochs
+    config.callback_config.use_reduce_lr_on_plateau = FLAGS.scheduler
     print(config)
 
     # Detect strategy
@@ -72,7 +83,6 @@ def main(_):
             entity=CONFIG.value.wandb_config.entity,
             project=CONFIG.value.wandb_config.project,
             job_type='train',
-            name="bdd100k-pretrain",
             config=config.to_dict(),
         )
         # Initialize W&B metrics logger callback.

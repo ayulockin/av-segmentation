@@ -10,6 +10,7 @@ from ml_collections.config_flags import config_flags
 import wandb
 from wandb.keras import WandbCallback
 import tensorflow as tf
+from tensorflow import keras
 
 from drivable.data import GetDrivableDataloader
 from drivable.model import get_unet_model, build_deeplabv3_plus
@@ -29,6 +30,14 @@ VAL_MASK_PATH = f"/home/manan_goel/av-segmentation/artifacts/train_masks:v0"
     
 # img_paths = glob.glob(f"{TRAIN_DATA_PATH}/*.jpg")
 # mask_paths = glob.glob(f"{TRAIN_MASK_PATH}/*.png")
+
+def get_model(dir):
+    model = keras.models.load_model(f"{dir}")
+    x = model.layers[-2].output
+    predictions = keras.layers.Conv2D(3, kernel_size=(1, 1), padding="same", name='final')(x)
+    model = keras.Model(inputs=model.input, outputs=predictions)
+
+    return model
 
 with open("splits/train_split.txt", "r") as f:
     img_paths = f.readlines()
@@ -52,7 +61,6 @@ with open("splits/val_split.txt", "r") as f:
 
 
 def main(_):
-    quit()
     # Get configs from the config file.
     config = CONFIG.value
     print(config)
@@ -72,7 +80,7 @@ def main(_):
             entity=CONFIG.value.wandb_config.entity,
             project=CONFIG.value.wandb_config.project,
             job_type='train',
-            name="bdd100k-pretrain",
+            name="bdd100k-finetune",
             config=config.to_dict(),
         )
         # Initialize W&B metrics logger callback.
@@ -93,7 +101,14 @@ def main(_):
     # with strategy.scope():
         # Get model
     tf.keras.backend.clear_session()
-    model = get_unet_model((224, 224), 3)
+    if wandb.run is not None:
+        artifact = wandb.run.use_artifact("av-team/drivable-segmentation/run_1t1qdtpr_model:latest")
+    else:
+        api = wandb.Api()
+        artifact = api.artifact("av-team/drivable-segmentation/run_1t1qdtpr_model:latest")
+    
+    artifact_dir = artifact.download()
+    model = get_model(artifact_dir)
 
         # if config.train_config.loss == "sparse_categorical_crossentropy":
         #     loss = tf.keras.losses.SparseCategoricalCrossentropy()
