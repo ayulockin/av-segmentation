@@ -110,7 +110,7 @@ class WandbModelCheckpoint(callbacks.ModelCheckpoint):
 
             if logs['val_loss'] < self.best_score:
                 self.best_score = logs['val_loss']
-            aliases.append("best")
+                aliases.append("best")
             self._log_ckpt_as_artifact(filepath, aliases=aliases)
 
     def _log_ckpt_as_artifact(self, filepath: str, aliases: List[str] = []):
