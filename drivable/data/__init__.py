@@ -6,5 +6,5 @@ __all__ = [
     "BDDSemanticSegmentationLoader",
     "GetDrivableDataloader",
     "download_dataset",
-    "preprocess_dataframe"
+    "preprocess_dataframe",
 ]

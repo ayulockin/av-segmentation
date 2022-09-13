@@ -13,43 +13,29 @@ print(os.path.isdir(DATA_PATH), os.path.isdir(MASK_PATH))
 
 img_files = os.listdir(DATA_PATH)
 # Random sample of images
-img_files = np.random.choice(
-    img_files,
-    size=DATA_SIZE,
-    replace=False
-)
+img_files = np.random.choice(img_files, size=DATA_SIZE, replace=False)
 # Save the split as txt file
-np.savetxt(
-    f"{DATA_TYPE}_split.txt",
-    img_files,
-    fmt="%s",
-    delimiter=","
-)
+np.savetxt(f"{DATA_TYPE}_split.txt", img_files, fmt="%s", delimiter=",")
 
-DRIVABLE_SEG_MAP = {
-    0: "direct",
-    1: "alternative",
-    2: "background"
-}
+DRIVABLE_SEG_MAP = {0: "direct", 1: "alternative", 2: "background"}
 
 # Initialize W&B run
 run = wandb.init(
-    entity="av-team",
-    project="drivable-segmentation",
-    job_type=f"{DATA_TYPE}_table"
+    entity="av-team", project="drivable-segmentation", job_type=f"{DATA_TYPE}_table"
 )
 
 data_at = wandb.Artifact(name=DATA_TYPE, type="dataset")
 # Use BDD100K dataset artifact
-bdd100k_artifact = run.use_artifact('av-team/bdd100k-perception/bdd100k-dataset:v0', type='dataset')
+bdd100k_artifact = run.use_artifact(
+    "av-team/bdd100k-perception/bdd100k-dataset:v0", type="dataset"
+)
 # Use Mask artifact
-mask_artifact = run.use_artifact(f'av-team/drivable-segmentation/{DATA_TYPE}_masks:v0', type='masks')
+mask_artifact = run.use_artifact(
+    f"av-team/drivable-segmentation/{DATA_TYPE}_masks:v0", type="masks"
+)
 
 # Intialize W&B Tables for drivable seg data
-column_names = [
-    "image_id",
-    "image"
-]
+column_names = ["image_id", "image"]
 data_table = wandb.Table(columns=column_names, allow_mixed_types=True)
 
 # Add data to the table row-wise
@@ -66,18 +52,18 @@ for idx, file_name in tqdm(enumerate(img_files)):
             idx,
             wandb.Image(
                 image,
-                masks = {
+                masks={
                     "ground_truth": {
                         "mask_data": mask,
-                        "class_labels": DRIVABLE_SEG_MAP
+                        "class_labels": DRIVABLE_SEG_MAP,
                     }
-                }
-            )
+                },
+            ),
         )
     else:
         masks_unfound.append(file_id)
 
 # Log the artifact to W&B
-data_at.add(data_table, name = f"{DATA_TYPE}_table")
+data_at.add(data_table, name=f"{DATA_TYPE}_table")
 data_at.add_file(f"{DATA_TYPE}_split.txt")
 run.log_artifact(data_at)

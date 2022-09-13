@@ -23,14 +23,12 @@ FLAGS = flags.FLAGS
 CONFIG = config_flags.DEFINE_config_file("config")
 flags.DEFINE_bool("wandb", False, "MLOps pipeline for our classifier.")
 flags.DEFINE_bool("log_model", False, "Checkpoint model while training.")
-flags.DEFINE_bool("log_eval", False, "Log model prediction, needs --wandb argument as well.")
+flags.DEFINE_bool(
+    "log_eval", False, "Log model prediction, needs --wandb argument as well."
+)
 
 # ID to Label dict
-DRIVABLE_SEG_MAP = {
-    0: "direct",
-    1: "alternative",
-    2: "background"
-}
+DRIVABLE_SEG_MAP = {0: "direct", 1: "alternative", 2: "background"}
 
 
 def main(_):
@@ -89,7 +87,9 @@ def main(_):
     # Custom W&B model prediction visualization callback
     if wandb.run is not None:
         if FLAGS.log_eval:
-            model_pred_viz = callbacks.get_evaluation_callback(config, validloader, DRIVABLE_SEG_MAP)
+            model_pred_viz = callbacks.get_evaluation_callback(
+                config, validloader, DRIVABLE_SEG_MAP
+            )
             CALLBACKS += [model_pred_viz]
 
     with strategy.scope():

@@ -117,6 +117,22 @@ class BaseWandbEvalCallback(Callback, metaclass=abc.ABCMeta):
         # Log the pred_table as W&B Artifacts
         self.log_pred_table()
 
+    def on_test_begin(self, logs=None):
+        # Initialize the data_table
+        self.init_data_table(column_names=self.data_table_columns)
+        # Log the ground truth data
+        self.add_ground_truth(logs)
+        # Log the data_table as W&B Artifacts
+        self.log_data_table(name="test", table_name="test_table")
+
+    def on_test_end(self, logs=None):
+        # Initialize the pred_table
+        self.init_pred_table(column_names=self.pred_table_columns)
+        # Log the model prediction
+        self.add_model_predictions(None, logs)
+        # Log the pred_table as W&B Artifacts
+        self.log_pred_table(table_name="test_pred")
+
     @abc.abstractmethod
     def add_ground_truth(self, logs: Dict[str, float] = {}):
         """Use this method to write the logic for adding validation/training

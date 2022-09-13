@@ -44,7 +44,10 @@ class WandbSegCallback(BaseWandbEvalCallback):
             pred_wandb_mask = wandb.Image(
                 image,
                 masks={
-                    "prediction": {"mask_data": pred.numpy(), "class_labels": self.id2label}
+                    "prediction": {
+                        "mask_data": pred.numpy(),
+                        "class_labels": self.id2label,
+                    }
                 },
             )
             self.pred_table.add_data(

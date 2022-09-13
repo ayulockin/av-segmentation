@@ -6,9 +6,10 @@ from ml_collections import config_dict
 def get_wandb_configs() -> ml_collections.ConfigDict:
     configs = ml_collections.ConfigDict()
     configs.entity = "av-team"
-    configs.project = "drivable-segmentation"
-    
+    configs.project = "drivable-segmentation-test"
+
     return configs
+
 
 def get_dataset_configs() -> ml_collections.ConfigDict:
     configs = ml_collections.ConfigDict()
@@ -25,6 +26,7 @@ def get_dataset_configs() -> ml_collections.ConfigDict:
 
     return configs
 
+
 def get_model_configs() -> ml_collections.ConfigDict:
     configs = ml_collections.ConfigDict()
     configs.model_img_height = 224
@@ -35,6 +37,7 @@ def get_model_configs() -> ml_collections.ConfigDict:
     configs.post_gap_dropout = False
 
     return configs
+
 
 def get_callback_configs() -> ml_collections.ConfigDict:
     configs = ml_collections.ConfigDict()
@@ -48,12 +51,15 @@ def get_callback_configs() -> ml_collections.ConfigDict:
     # Model checkpointing
     configs.checkpoint_filepath = "wandb/model_{epoch}"
     configs.save_best_only = True
+    # Model evaluation
+    configs.viz_num_images = 100
 
     return configs
 
+
 def get_train_configs() -> ml_collections.ConfigDict:
     configs = ml_collections.ConfigDict()
-    configs.epochs = 3
+    configs.epochs = 5
     configs.use_augmentations = False
     configs.optimizer = "adam"
     configs.learning_rate = 0.001
@@ -62,6 +68,7 @@ def get_train_configs() -> ml_collections.ConfigDict:
     configs.metrics = ["accuracy"]
 
     return configs
+
 
 def get_config() -> ml_collections.ConfigDict:
     config = ml_collections.ConfigDict()

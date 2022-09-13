@@ -51,7 +51,7 @@ def main(_):
         project=FLAGS.wandb_project,
         entity=FLAGS.wandb_entity,
         job_type=FLAGS.wandb_job_type,
-        config=FLAGS.experiment_configs.to_dict()
+        config=FLAGS.experiment_configs.to_dict(),
     )
 
     data_loader = BDDSemanticSegmentationLoader(
