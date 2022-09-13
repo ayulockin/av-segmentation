@@ -52,7 +52,7 @@ def download_dataset(dataset_name: str,
         with open(partition_file[0]) as f:
             partition_data = json.loads(f.read())
             assert partition_data['_type'] == "partitioned-table"
-            assert partition_data['parts_path'] == "train_parts"
+            # assert partition_data['parts_path'] == f"{dataset_type}_parts"
 
         # Get parts table
         part_paths = partition_data['parts_path']
@@ -97,7 +97,7 @@ def download_dataset(dataset_name: str,
     return data_df
 
 
-def preprocess_dataset(df):
+def preprocess_dataframe(df):
     # Remove unnecessary columns
     df = df.drop(['image_id', 'width', 'height'], axis=1)
     assert len(df.columns) == 2
@@ -105,4 +105,4 @@ def preprocess_dataset(df):
     image_paths = df.image_path.values
     mask_paths = df.mask_path.values
 
-    return image_paths, mask_path
+    return image_paths, mask_paths
