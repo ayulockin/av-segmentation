@@ -29,7 +29,8 @@ def main(_):
     run = wandb.init(
         entity="av-team",
         project="drivable-segmentation",
-        job_type=f"{config.data_type}_table"
+        job_type=f"{config.data_type}_table",
+        config=config.to_dict()
     )
     
     # Since the val split is from the train set

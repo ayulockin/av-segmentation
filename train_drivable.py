@@ -11,6 +11,7 @@ import wandb
 from wandb.keras import WandbCallback
 import tensorflow as tf
 
+from drivable.data import download_dataset, preprocess_dataset
 from drivable.data import GetDrivableDataloader
 from drivable.model import get_unet_model
 from drivable.utils.devices import initialize_device
@@ -22,12 +23,6 @@ CONFIG = config_flags.DEFINE_config_file("config")
 flags.DEFINE_bool("wandb", False, "MLOps pipeline for our classifier.")
 flags.DEFINE_bool("log_model", False, "Checkpoint model while training.")
 # flags.DEFINE_bool("log_eval", False, "Log model prediction, needs --wandb argument as well.")
-
-TRAIN_DATA_PATH = f"artifacts/bdd100k-dataset:v0/images/100k/train"
-TRAIN_MASK_PATH = f"artifacts/train_masks:v0"
-    
-img_paths = glob.glob(f"{TRAIN_DATA_PATH}/*.jpg")
-mask_paths = glob.glob(f"{TRAIN_MASK_PATH}/*.png")
 
 
 def main(_):
@@ -57,15 +52,16 @@ def main(_):
 
     # Download and get dataset
     # dataset_name = config.dataset_config.dataset_name
-    # info, (train_images, train_labels) = download_and_get_dataset(dataset_name, 'train')
-    # info, (valid_images, valid_labels) = download_and_get_dataset(dataset_name, 'valid')
+    train_df = download_and_get_dataset(dataset_name, 'train')
+    valid_df = download_and_get_dataset(dataset_name, 'valid')
+
+    train_imgs, train_masks = preprocess_dataset(train_df)
+    valid_imgs, valid_masks = preprocess_dataset(valid_df)
 
     # Get dataloader
     make_dataloader = GetDrivableDataloader(config)
-    trainloader = make_dataloader.get_dataloader(img_paths, mask_paths)
-    # validloader = make_dataloader.get_dataloader(valid_images, valid_labels, dataloader_type="valid")
-    imgs, masks = next(iter(trainloader))
-    print(imgs.shape, masks.shape)
+    trainloader = make_dataloader.get_dataloader(train_imgs, train_masks)
+    validloader = make_dataloader.get_dataloader(valid_imgs, valid_masks, dataloader_type="valid")
 
     with strategy.scope():
         # Get model
