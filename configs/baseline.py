@@ -65,7 +65,7 @@ def get_callback_configs() -> ml_collections.ConfigDict:
 
 def get_train_configs() -> ml_collections.ConfigDict:
     configs = ml_collections.ConfigDict()
-    configs.epochs = 2
+    configs.epochs = 15
     configs.use_augmentations = False
     configs.optimizer = "adam"
     configs.learning_rate = 0.001
