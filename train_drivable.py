@@ -36,11 +36,6 @@ def main(_):
     config = CONFIG.value
     print(config)
 
-    # Detect strategy
-    strategy = initialize_device()
-    batch_size = config.dataset_config.batch_size * strategy.num_replicas_in_sync
-    config.dataset_config.batch_size = batch_size
-
     CALLBACKS = []
     sync_tensorboard = None
     if config.callback_config.use_tensorboard:
@@ -100,36 +95,37 @@ def main(_):
     if config.callback_config.use_tensorboard:
         CALLBACKS += [tf.keras.callbacks.TensorBoard()]
 
-    with strategy.scope():
-        # Get model
-        model = get_unet_model(
-            (config.model_config.model_img_height, config.model_config.model_img_width),
-            config.model_config.model_img_channels,
+    # Get model
+    model = get_unet_model(
+        (config.model_config.model_img_height, config.model_config.model_img_width),
+        config.model_config.model_img_channels,
+    )
+
+    # Optimizer
+    if config.train_config.optimizer == "adam":
+        optimizer = tf.keras.optimizers.Adam(
+            learning_rate=config.train_config.learning_rate
         )
 
-        # Optimizer
-        if config.train_config.optimizer == "adam":
-            optimizer = tf.keras.optimizers.Adam(
-                learning_rate=config.train_config.learning_rate
-            )
+    # Loss function
+    if config.train_config.loss == "sparse_categorical_crossentropy":
+        loss = tf.keras.losses.SparseCategoricalCrossentropy()
 
-        # Loss function
-        if config.train_config.loss == "sparse_categorical_crossentropy":
-            loss = tf.keras.losses.SparseCategoricalCrossentropy()
+    # Metrics
+    metrics = []
+    metrics += [
+        tf.keras.metrics.OneHotIoU(
+            num_classes=config.dataset_config.num_classes,
+            target_class_ids=[0],
+        ),
+        tf.keras.metrics.OneHotMeanIoU(num_classes=config.dataset_config.num_classes),
+        "accuracy",
+    ]
 
-        # Metrics
-        metrics = []
-        metrics += [
-            tf.keras.metrics.OneHotIoU(
-                num_classes=config.dataset_config.num_classes,
-                target_class_ids=[0],
-            ),
-            tf.keras.metrics.OneHotMeanIoU(num_classes=config.dataset_config.num_classes),
-            "accuracy",
-        ]
-
-        # Compile the model
-        model.compile(optimizer=optimizer, loss=loss, metrics=metrics)
+    # Compile the model
+    tf.keras.backend.clear_session()
+    tf.config.optimizer.set_jit(True) # Enable XLA.
+    model.compile(optimizer=optimizer, loss=loss, metrics=metrics)
 
     # Train the model
     model.fit(

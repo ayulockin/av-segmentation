@@ -19,7 +19,7 @@ def get_dataset_configs() -> ml_collections.ConfigDict:
     configs.channels = 3
     configs.mask_channels = 1
     configs.apply_resize = True
-    configs.batch_size = 32
+    configs.batch_size = 128
     configs.num_classes = 3
     configs.apply_one_hot = True
     configs.do_cache = False
@@ -65,7 +65,7 @@ def get_callback_configs() -> ml_collections.ConfigDict:
 
 def get_train_configs() -> ml_collections.ConfigDict:
     configs = ml_collections.ConfigDict()
-    configs.epochs = 1
+    configs.epochs = 2
     configs.use_augmentations = False
     configs.optimizer = "adam"
     configs.learning_rate = 0.001

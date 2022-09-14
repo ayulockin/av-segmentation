@@ -236,3 +236,4 @@ class BaseWandbEvalCallback(Callback, metaclass=abc.ABCMeta):
         pred_artifact = wandb.Artifact(f"run_{wandb.run.id}_pred", type=type)
         pred_artifact.add(self.pred_table, table_name)
         wandb.run.log_artifact(pred_artifact, aliases=aliases)
+        # wandb.log({"pred_table": self.pred_table})

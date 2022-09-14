@@ -8,6 +8,7 @@ AUTOTUNE = tf.data.AUTOTUNE
 class GetDrivableDataloader:
     def __init__(self, args):
         self.args = args
+        print("Batch Size: ", args.dataset_config.batch_size)
 
     def get_dataloader(self, img_paths, mask_paths, dataloader_type="train"):
         """
