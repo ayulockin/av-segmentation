@@ -88,6 +88,7 @@ class BaseWandbEvalCallback(Callback, metaclass=abc.ABCMeta):
         self,
         data_table_columns=List[str],
         pred_table_columns=List[str],
+        is_train:bool=True,
         *args,
         **kwargs,
     ):
@@ -100,38 +101,43 @@ class BaseWandbEvalCallback(Callback, metaclass=abc.ABCMeta):
 
         self.data_table_columns = data_table_columns
         self.pred_table_columns = pred_table_columns
+        self.is_train = is_train
 
     def on_train_begin(self, logs=None):
-        # Initialize the data_table
-        self.init_data_table(column_names=self.data_table_columns)
-        # Log the ground truth data
-        self.add_ground_truth(logs)
-        # Log the data_table as W&B Artifacts
-        self.log_data_table()
+        if self.is_train:
+            # Initialize the data_table
+            self.init_data_table(column_names=self.data_table_columns)
+            # Log the ground truth data
+            self.add_ground_truth(logs)
+            # Log the data_table as W&B Artifacts
+            self.log_data_table()
 
     def on_epoch_end(self, epoch, logs=None):
-        # Initialize the pred_table
-        self.init_pred_table(column_names=self.pred_table_columns)
-        # Log the model prediction
-        self.add_model_predictions(epoch, logs)
-        # Log the pred_table as W&B Artifacts
-        self.log_pred_table()
+        if self.is_train:
+            # Initialize the pred_table
+            self.init_pred_table(column_names=self.pred_table_columns)
+            # Log the model prediction
+            self.add_model_predictions(epoch, logs)
+            # Log the pred_table as W&B Artifacts
+            self.log_pred_table()
 
     def on_test_begin(self, logs=None):
-        # Initialize the data_table
-        self.init_data_table(column_names=self.data_table_columns)
-        # Log the ground truth data
-        self.add_ground_truth(logs)
-        # Log the data_table as W&B Artifacts
-        self.log_data_table(name="test", table_name="test_table")
+        if not self.is_train:
+            # Initialize the data_table
+            self.init_data_table(column_names=self.data_table_columns)
+            # Log the ground truth data
+            self.add_ground_truth(logs)
+            # Log the data_table as W&B Artifacts
+            self.log_data_table(name="test_data", table_name="test_table")
 
     def on_test_end(self, logs=None):
-        # Initialize the pred_table
-        self.init_pred_table(column_names=self.pred_table_columns)
-        # Log the model prediction
-        self.add_model_predictions(None, logs)
-        # Log the pred_table as W&B Artifacts
-        self.log_pred_table(table_name="test_pred")
+        if not self.is_train:
+            # Initialize the pred_table
+            self.init_pred_table(column_names=self.pred_table_columns)
+            # Log the model prediction
+            self.add_model_predictions(None, logs)
+            # Log the pred_table as W&B Artifacts
+            self.log_pred_table(type="evaluation", table_name="test_pred")
 
     @abc.abstractmethod
     def add_ground_truth(self, logs: Dict[str, float] = {}):
@@ -188,7 +194,7 @@ class BaseWandbEvalCallback(Callback, metaclass=abc.ABCMeta):
         self.pred_table = wandb.Table(columns=column_names)
 
     def log_data_table(
-        self, name: str = "val", type: str = "dataset", table_name: str = "val_data"
+        self, name: str = "val_data", type: str = "eval_dataset", table_name: str = "val_data"
     ):
         """Log the `data_table` as W&B artifact and call
         `use_artifact` on it so that the evaluation table can use the reference
@@ -214,7 +220,7 @@ class BaseWandbEvalCallback(Callback, metaclass=abc.ABCMeta):
 
     def log_pred_table(
         self,
-        type: str = "evaluation",
+        type: str = "validation",
         table_name: str = "eval_data",
         aliases: List[str] = ["latest"],
     ):

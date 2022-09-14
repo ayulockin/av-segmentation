@@ -6,7 +6,7 @@ from ml_collections import config_dict
 def get_wandb_configs() -> ml_collections.ConfigDict:
     configs = ml_collections.ConfigDict()
     configs.entity = "av-team"
-    configs.project = "drivable-segmentation-test"
+    configs.project = "drivable-segmentation"
 
     return configs
 
@@ -23,12 +23,16 @@ def get_dataset_configs() -> ml_collections.ConfigDict:
     configs.num_classes = 3
     configs.apply_one_hot = True
     configs.do_cache = False
+    configs.train_version = "latest"
+    configs.val_version = "latest"
+    configs.test_version = "latest"
 
     return configs
 
 
 def get_model_configs() -> ml_collections.ConfigDict:
     configs = ml_collections.ConfigDict()
+    configs.model_name = "vanilla unet"
     configs.model_img_height = 224
     configs.model_img_width = 224
     configs.model_img_channels = 3
@@ -65,7 +69,6 @@ def get_train_configs() -> ml_collections.ConfigDict:
     configs.learning_rate = 0.001
     configs.sgd_momentum = 0.9
     configs.loss = "sparse_categorical_crossentropy"
-    configs.metrics = ["accuracy"]
 
     return configs
 

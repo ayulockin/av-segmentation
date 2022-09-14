@@ -54,11 +54,12 @@ def main(_):
         CALLBACKS += [callbacks.WandBMetricsLogger()]
 
     # Download and get dataset
-    train_df = download_dataset("train", version="v0")
-    valid_df = download_dataset("val", version="v0")
+    train_df = download_dataset("train", version=config.dataset_config.train_version)
+    valid_df = download_dataset("val", version=config.dataset_config.val_version)
 
     train_imgs, train_masks = preprocess_dataframe(train_df)
     valid_imgs, valid_masks = preprocess_dataframe(valid_df)
+    print("size of data: ", len(train_imgs), len(valid_imgs))
 
     # Get dataloader
     make_dataloader = GetDrivableDataloader(config)
@@ -99,18 +100,30 @@ def main(_):
             config.model_config.model_img_channels,
         )
 
-        if config.train_config.loss == "sparse_categorical_crossentropy":
-            loss = tf.keras.losses.SparseCategoricalCrossentropy()
-
+        # Optimizer
         if config.train_config.optimizer == "adam":
             optimizer = tf.keras.optimizers.Adam(
                 learning_rate=config.train_config.learning_rate
             )
 
+        # Loss function
+        if config.train_config.loss == "sparse_categorical_crossentropy":
+            loss = tf.keras.losses.SparseCategoricalCrossentropy()
+
+        # Metrics
+        metrics = []
+        metrics += [
+            tf.keras.metrics.OneHotIoU(
+                num_classes=config.dataset_config.num_classes,
+                target_class_ids=[0],
+            ),
+            tf.keras.metrics.OneHotMeanIoU(num_classes=config.dataset_config.num_classes),
+            "accuracy",
+        ]
+        print(metrics)
+
         # Compile the model
-        model.compile(
-            optimizer=optimizer, loss=loss, metrics=config.train_config.metrics
-        )
+        model.compile(optimizer=optimizer, loss=loss, metrics=metrics)
 
     # Train the model
     model.fit(

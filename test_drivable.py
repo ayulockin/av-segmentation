@@ -56,7 +56,7 @@ def main(_):
         CALLBACKS += [callbacks.WandBMetricsLogger()]
 
     # Download and get dataset
-    test_df = download_dataset("test", version="v0")
+    test_df = download_dataset("test", version=config.dataset_config.test_version)
     test_imgs, test_masks = preprocess_dataframe(test_df)
 
     # Get dataloader
@@ -69,13 +69,15 @@ def main(_):
     if wandb.run is not None:
         if FLAGS.log_eval:
             model_pred_viz = callbacks.get_evaluation_callback(
-                config, testloader, DRIVABLE_SEG_MAP
+                config, testloader, DRIVABLE_SEG_MAP, is_train=False
             )
             CALLBACKS += [model_pred_viz]
 
     if FLAGS.model_artifact_path is not None:
         model_path = download_model(FLAGS.model_artifact_path)
-        print(model_path)
+        if wandb.run is not None:
+            artifact = run.use_artifact(FLAGS.model_artifact_path, type='model')
+        print("Path to the model checkpoint: ", model_path)
     else:
         raise
 

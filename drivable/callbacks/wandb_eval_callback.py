@@ -6,16 +6,17 @@ from drivable.utils import BaseWandbEvalCallback
 class WandbSegCallback(BaseWandbEvalCallback):
     def __init__(
         self,
-        validation_data,
+        dataloader,
         id2label,
         num_samples=100,
+        is_train=True
     ):
         data_table_columns = ["idx", "ground_truth"]
         pred_table_columns = ["epoch"] + data_table_columns + ["prediction"]
-        super().__init__(data_table_columns, pred_table_columns)
+        super().__init__(data_table_columns, pred_table_columns, is_train)
 
         # Make unbatched iterator from `tf.data.Dataset`.
-        self.val_ds = validation_data.unbatch().take(num_samples)
+        self.val_ds = dataloader.unbatch().take(num_samples)
         self.id2label = id2label
 
     def add_ground_truth(self, logs):
@@ -58,7 +59,7 @@ class WandbSegCallback(BaseWandbEvalCallback):
             )
 
 
-def get_evaluation_callback(args, validation_data, id2label):
+def get_evaluation_callback(args, dataloader, id2label, is_train=True):
     return WandbSegCallback(
-        validation_data, id2label, num_samples=args.callback_config.viz_num_images
+        dataloader, id2label, num_samples=args.callback_config.viz_num_images, is_train=is_train
     )

@@ -56,7 +56,6 @@ def download_dataset(
         with open(partition_file[0]) as f:
             partition_data = json.loads(f.read())
             assert partition_data["_type"] == "partitioned-table"
-            # assert partition_data['parts_path'] == f"{dataset_type}_parts"
 
         # Get parts table
         part_paths = partition_data["parts_path"]
