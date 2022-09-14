@@ -42,6 +42,9 @@ def main(_):
     config.dataset_config.batch_size = batch_size
 
     CALLBACKS = []
+    sync_tensorboard = None
+    if config.callback_config.use_tensorboard:
+        sync_tensorboard = True
     # Initialize a Weights and Biases run.
     if FLAGS.wandb:
         run = wandb.init(
@@ -49,6 +52,7 @@ def main(_):
             project=CONFIG.value.wandb_config.project,
             job_type="train",
             config=config.to_dict(),
+            sync_tensorboard=sync_tensorboard
         )
         # Initialize W&B metrics logger callback.
         CALLBACKS += [callbacks.WandBMetricsLogger()]
@@ -93,6 +97,9 @@ def main(_):
             )
             CALLBACKS += [model_pred_viz]
 
+    if config.callback_config.use_tensorboard:
+        CALLBACKS += [tf.keras.callbacks.TensorBoard()]
+
     with strategy.scope():
         # Get model
         model = get_unet_model(
@@ -120,7 +127,6 @@ def main(_):
             tf.keras.metrics.OneHotMeanIoU(num_classes=config.dataset_config.num_classes),
             "accuracy",
         ]
-        print(metrics)
 
         # Compile the model
         model.compile(optimizer=optimizer, loss=loss, metrics=metrics)

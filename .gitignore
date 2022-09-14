@@ -131,3 +131,6 @@ dmypy.json
 # Weights and Biases
 wandb/
 artifacts/
+
+# TensorBoard
+logs/

@@ -96,7 +96,7 @@ class BaseWandbEvalCallback(Callback, metaclass=abc.ABCMeta):
 
         if wandb.run is None:
             raise wandb.Error(
-                "You must call wandb.init() before WandbEvalTablesBuilder()"
+                "You must call wandb.init() before BaseWandbEvalCallback()"
             )
 
         self.data_table_columns = data_table_columns

@@ -57,13 +57,15 @@ def get_callback_configs() -> ml_collections.ConfigDict:
     configs.save_best_only = True
     # Model evaluation
     configs.viz_num_images = 100
+    # Use tensorboard
+    configs.use_tensorboard = True
 
     return configs
 
 
 def get_train_configs() -> ml_collections.ConfigDict:
     configs = ml_collections.ConfigDict()
-    configs.epochs = 5
+    configs.epochs = 1
     configs.use_augmentations = False
     configs.optimizer = "adam"
     configs.learning_rate = 0.001
