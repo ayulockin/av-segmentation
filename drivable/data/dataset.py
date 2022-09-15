@@ -32,12 +32,8 @@ def download_dataset(
     Return:
         df_data (pandas.DataFrame): Dataframe with path to images and masks
     """
-    if dataset_name == "train" and os.path.exists(save_at + "train.csv"):
-        data_df = pd.read_csv(save_at + "train.csv")
-    elif dataset_name == "val" and os.path.exists(save_at + "valid.csv"):
-        data_df = pd.read_csv(save_at + "valid.csv")
-    elif dataset_name == "test" and os.path.exists(save_at + "test.csv"):
-        data_df = pd.read_csv(save_at + "test.csv")
+    if os.path.exists(save_at + f"{dataset_name}:{version}.csv"):
+        data_df = pd.read_csv(save_at + f"{dataset_name}:{version}.csv")
     else:
         data_df = None
         print("Downloading dataset...")
@@ -85,19 +81,12 @@ def download_dataset(
             df_data = [image_id, image_path, mask_path, width, height]
             data_df.loc[idx] = df_data
 
-    # Shuffle the dataframe
-    if dataset_name == "train":
-        data_df = data_df.sample(frac=1, random_state=42).reset_index(drop=True)
+        # Shuffle the dataframe
+        if "train" in dataset_name:
+            data_df = data_df.sample(frac=1, random_state=42).reset_index(drop=True)
 
-    # Save the dataframes as csv
-    if dataset_name == "train" and not os.path.exists(save_at + "train.csv"):
-        data_df.to_csv(save_at + "train.csv", index=False)
-
-    if dataset_name == "val" and not os.path.exists(save_at + "valid.csv"):
-        data_df.to_csv(save_at + "valid.csv", index=False)
-
-    if dataset_name == "test" and not os.path.exists(save_at + "test.csv"):
-        data_df.to_csv(save_at + "test.csv", index=False)
+        # Save the dataframes as csv
+        data_df.to_csv(save_at + f"{dataset_name}:{version}.csv", index=False)
 
     return data_df
 

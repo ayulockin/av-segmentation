@@ -35,6 +35,9 @@ class GetDrivableDataloader:
 
         if self.args.dataset_config.do_cache:
             dataloader = dataloader.cache()
+        
+        if dataloader_type=="train" and self.args.train_config.use_sample_weight:
+            dataloader = dataloader.map(self.add_sample_weights, num_parallel_calls=AUTOTUNE)
 
         # Add general stuff
         dataloader = dataloader.batch(
@@ -92,6 +95,19 @@ class GetDrivableDataloader:
         mask = self.decode_mask(mask, dataloader_type)
 
         return image, mask
+
+    def add_sample_weights(self, image, mask):
+        # The weights for each class, with the constraint that:
+        #     sum(class_weights) == 1.0
+        # The class weights were calculated on full resolution of the images manually.
+        class_weights = tf.constant([10.436624143462994, 4.131715180159062, 0.6016292093398792])
+        class_weights = class_weights/tf.reduce_sum(class_weights)
+
+        # Create an image of `sample_weights` by using the label at each pixel as an 
+        # index into the `class weights` .
+        sample_weights = tf.gather(class_weights, indices=tf.cast(mask, tf.int32))
+
+        return image, mask, sample_weights
 
 
 #############
